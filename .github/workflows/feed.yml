@@ -1,0 +1,26 @@
+name: Meta-feed bijwerken
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # dagelijks 05:00 NL-tijd (zomer), Meta haalt daarna op
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node build-feed.mjs
+      - name: Feed committen als er iets veranderd is
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/meta-feed.csv
+          git diff --cached --quiet || git commit -m "Feed bijgewerkt $(date -u +%F)"
+          git push
