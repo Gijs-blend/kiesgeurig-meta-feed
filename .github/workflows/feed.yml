@@ -2,7 +2,7 @@ name: Meta-feed bijwerken
 
 on:
   schedule:
-    - cron: '0 3 * * *'   # dagelijks 05:00 NL-tijd (zomer), Meta haalt daarna op
+    - cron: '17 3 * * *'  # dagelijks 05:17 NL-tijd (zomer); niet op het hele uur, dan slaat GitHub runs over
   workflow_dispatch:
 
 permissions:
