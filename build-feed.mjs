@@ -35,6 +35,16 @@ function csv(v) {
 
 const money = n => Number(n).toFixed(2) + ' EUR';
 
+// Shopify-tags als Meta internal_label, zodat je in Commerce Manager sets kunt maken
+// met "Intern label bevat woonmaand". Formaat volgens Meta: ['tag1','tag2'].
+function internalLabel(tags) {
+  const list = (Array.isArray(tags) ? tags : String(tags || '').split(','))
+    .map(t => String(t).trim().toLowerCase().replace(/['",\[\]]/g, ''))
+    .filter(Boolean);
+  const uniq = [...new Set(list)].slice(0, 50);
+  return uniq.length ? '[' + uniq.map(t => `'${t}'`).join(',') + ']' : '';
+}
+
 const products = [];
 for (let page = 1; page < 200; page++) {
   const batch = await fetchPage(page);
@@ -44,7 +54,7 @@ for (let page = 1; page < 200; page++) {
 if (products.length < MIN_PRODUCTS) throw new Error(`Maar ${products.length} producten, feed niet bijgewerkt`);
 
 const cols = ['id', 'item_group_id', 'title', 'description', 'availability', 'condition', 'price',
-  'sale_price', 'link', 'image_link', 'additional_image_link', 'brand', 'product_type'];
+  'sale_price', 'link', 'image_link', 'additional_image_link', 'brand', 'product_type', 'internal_label'];
 const rows = [cols.join(',')];
 let variants = 0, skipped = 0;
 
@@ -71,7 +81,8 @@ for (const p of products) {
       image,
       imgs.filter(i => i !== image).slice(0, 10).join(','),
       p.vendor || 'Kiesgeurig',
-      p.product_type || ''
+      p.product_type || '',
+      internalLabel(p.tags)
     ].map(csv).join(','));
     variants++;
   }
